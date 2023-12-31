@@ -1,0 +1,150 @@
+/*
+Grupo 14-A 
+*/
+
+ACCION InformesMN ES 
+
+	//Ambiente
+	reg_experimentos = Registro	
+		clave : Registro
+			cod_dep: N(10);
+			cod_exp: N(10);
+		Fin Registro
+		cod_muestra: N(10);
+		nombre: AN(50);
+		riqueza: N(10,2);
+		propiedades: AN(100);
+		peso: N(10,2);
+	Fin Registro
+
+	reg_salida = Registro
+		cod_muestra: N(10);
+		nombre: AN(50);
+		propiedades: AN(100);
+	Fin Registro
+
+	ArchExps: Archivo de reg_experimentos;
+	RegExps: reg_experimentos;
+
+	ArchSal: Archivo de reg_salida;
+	RegSal: reg_salida;
+
+	resg_departamento, resg_experimento, total_muestras, total_generado, total_secuencia, a, b: entero;
+	peso_efectivo: real;
+	
+	sec: secuencia de caracteres;
+	v: caracter;
+
+	Funcion EnteroACaracter(n: entero): caracter es
+		Segun n Hacer
+			0: EnteroACaracter := '0'
+			1: EnteroACaracter := '1'
+			2: EnteroACaracter := '2'
+			3: EnteroACaracter := '3'
+			4: EnteroACaracter := '4'
+			5: EnteroACaracter := '5'
+			6: EnteroACaracter := '6'
+			7: EnteroACaracter := '7'
+			8: EnteroACaracter := '8'
+			9: EnteroACaracter := '9'
+		Fin Segun
+	Fin Funcion
+
+	Procedimiento inicializar_program es
+		total_muestras := 0;
+		total_generado := 0;
+		total_secuencia := 0;
+		resg_departamento := -1;
+		resg_experimento := -1;	
+	Fin procedimiento
+
+	Procedimiento corte_experimento es	
+		Si (resg_departamento <> -1) y (resg_experimento <> -1) entonces
+			Escribir(RegExps.clave.cod_dep,' | ', RegExps.clave.cod_dep, ' | ',total_muestras);
+		Fin si		
+		resg_experimento := RegExps.clave.cod_dep;
+		total_muestras := 0;
+	Fin procedimiento 
+	
+	Procedimiento corte_departamento es
+		corte_experimento;
+		resg_departamento := RegExps.clave.cod_dep;
+	Fin procedimiento
+	
+	Procedimiento generar_archivo es  
+		Si (RegExps.riqueza >= peso_efectivo) entonces 
+			total_generado := total_generado + 1;
+			RegSal.cod_muestra := RegExps.cod_muestra;
+			RegSal.nombre := RegExps.nombre;
+			RegSal.propiedades := RegExps.propiedades;
+			Escribir(ArchSal, RegSal);
+		Fin si		
+	Fin procedimiento 
+
+	Procedimiento generar_secuencia es
+
+		Si (RegExps.riqueza > 95) entonces
+			total_secuencia := total_secuencia + 1;
+			
+			Para a := 1 hasta 11 hacer
+				v := EnteroACaracter(RegExps.cod_muestra[a]);
+				Escribir(sec, v);
+				Avanzar(sec, v);
+			Fin para
+
+			Escribir(sec, '-');
+			
+ 			Para b := 1 hasta 51 hacer
+				v := RegExps.nombre[b];
+				Escribir(sec, v);
+				Avanzar(sec, v);
+			Fin para
+
+			Escribir(sec, '#');						
+			Avanzar(sec, v);
+		Fin si
+
+	Fin procedimiento 
+
+	//Proceso
+
+	Abrir/E(ArchExps);
+	Abrir/S(ArchSal);
+	Crear(sec);
+
+	inicializar_program; 
+
+	Escribir('Ingrese un peso efectivo:');
+	Leer(peso_efectivo);
+
+	Escribir('Cantidad de muestras por departamento y experimento:');
+	Escribir(' Departamento | Experimento | Muestras analizadas ');
+	
+	Mientras NFDA(ArchExps) hacer
+
+		Si (resg_departmento <> RegExps.clave.cod_dep) entonces  
+			corte_departamento;
+		Sino 
+			Si (resg_experimento <> RegExps.clave.cod_dep) entonces
+				corte_experimento;		
+			Fin si
+		Fin si
+
+		total_muestras := total_muestras + 1;			
+		generar_secuencia;
+		generar_archivo;
+		Leer(ArchExps, RegExps);
+
+	Fin mientras
+
+	corte_departamento;
+
+	Escribir('Secuencia generada con ', total_secuencia,' muestras.');
+	Escribir('Se genero un archivo de salida con ', total_generado, ' muestras.');
+	
+	Cerrar(sec);
+	Cerrar(ArchExps);
+	Cerrar(ArchSal);
+	//Fin proceso	
+
+FIN ACCION
