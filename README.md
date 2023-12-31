@@ -1,4 +1,4 @@
- LaboratorioPascal_ISI
+ LaboratorioPascal UTN - ISI
 
 Video de prueba: https://www.youtube.com/watch?v=MJPMYIvfLCY 
 
